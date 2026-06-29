@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theia - Built For Recommender</title>
+    <style>
+        /* Basic reset and background */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f111a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Chat window  */
+        #chat-container {
+            width: 400px;
+            height: 600px;
+            background-color: #1e2233;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Blue Header */
+        #header {
+            background-color: #3b71ff;
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* Area messages */
+        #chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Message Bubbles */
+        .message {
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .bot-message {
+            background-color: #333b4d;
+            color: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-message {
+            background-color: #3b71ff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Input Area at the bottom */
+        #input-area {
+            display: flex;
+            padding: 15px;
+            background-color: #1e2233;
+            border-top: 1px solid #2a2f42;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: #333b4d;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        #user-input::placeholder {
+            color: #8892b0;
+        }
+
+        #send-btn {
+            background-color: #3b71ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        #send-btn:hover {
+            background-color: #2756d9;
+        }
+        
+        ul {
+            margin: 5px 0 0 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat-container">
+        <div id="header">🤖 Theia - Built For Recommender</div>
+        <div id="chat-box">
+            </div>
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. The Dataset ---
+        const recommenderData = {
+            movies: {
+                "action": ["Avengers Endgame", "Superman"],
+                "sci-fi": ["Star Wars", "Stranger Things"],
+                "thriller": ["Lee Cronin's The Mummy", "From (series)"],
+                "drama": ["Micheal", "Teach you lesson"],
+                "romance": ["Thiruchitrambalam", "La La Land"]
+            },
+            phones: {
+                "samsung": ["S25 Ultra", "S25 FE"],
+                "iphone": ["17 Pro Max", "iPhone 17"],
+                "oneplus": ["OnePlus 15"]
+            },
+            laptops: {
+                "higher end": {
+                    "mac": "M5 Max",
+                    "windows": "Windows Surface"
+                },
+                "lower end": {
+                    "mac": "M4",
+                    "windows": "HP Victus"
+                }
+            },
+            games: {
+                "action rpg": ["Black Myth: Wukong"],
+                "espionage": ["007 First Light"]
+            }
+        };
+
+        // --- 2. Chat State Management ---
+        let chatState = "START";
+        let tempLaptopBudget = ""; 
+
+        // Helper function to format lists cleanly
+        function formatList(category, key) {
+            return recommenderData[category][key].map(item => `<li>${item}</li>`).join("");
+        }
+
+        function getBotResponse(userInput) {
+            // Aggressive text cleaning: Lowercase + Remove punctuation + Trim spaces
+            let text = userInput.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+
+            // Hidden reset command
+            if (text.includes("exit") || text.includes("reset") || text.includes("start over")) {
+                chatState = "AWAIT_CATEGORY";
+                return "Conversation reset! What are you looking for today?<br><i>(movies / phones / laptops / games)</i>";
+            }
+
+            switch (chatState) {
+                // --- MAIN MENU ---
+                case "AWAIT_CATEGORY":
+                    if (text.includes("movie")) {
+                        chatState = "AWAIT_MOVIE_GENRE";
+                        return "Great! What genre are you in the mood for?<br><i>(action / sci-fi / thriller / drama / romance)</i>";
+                    } 
+                    else if (text.includes("phone") || text.includes("mobile")) {
+                        chatState = "AWAIT_PHONE_BRAND";
+                        return "Excellent. Do you have a preferred brand?<br><i>(samsung / iphone / oneplus)</i>";
+                    } 
+                    else if (text.includes("laptop")) {
+                        chatState = "AWAIT_LAPTOP_BUDGET";
+                        return "Let's find you a laptop. What is your budget level?<br><i>(higher end / lower end)</i>";
+                    }
+                    else if (text.includes("game")) {
+                        chatState = "AWAIT_GAME_GENRE";
+                        return "Awesome! What kind of game genre do you want to play?<br><i>(action rpg / espionage)</i>";
+                    } 
+                    else {
+                        return "I'm sorry, I don't understand. Please type <b>movies</b>, <b>phones</b>, <b>laptops</b>, or <b>games</b>.";
+                    }
+
+                // --- MOVIES ---
+                case "AWAIT_MOVIE_GENRE":
+                    chatState = "AWAIT_CATEGORY"; 
+                    if (text.includes("action")) {
+                        return `Here are my top ACTION recommendations for you:<ul>${formatList("movies", "action")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else if (text.includes("scifi") || text.includes("sci fi")) { 
+                        return `Here are my top SCI-FI recommendations for you:<ul>${formatList("movies", "sci-fi")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else if (text.includes("thriller")) {
+                        return `Here are my top THRILLER recommendations for you:<ul>${formatList("movies", "thriller")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else if (text.includes("drama")) {
+                        return `Here are my top DRAMA recommendations for you:<ul>${formatList("movies", "drama")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else if (text.includes("romance")) {
+                        return `Here are my top ROMANCE recommendations for you:<ul>${formatList("movies", "romance")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else {
+                        chatState = "AWAIT_MOVIE_GENRE"; 
+                        return "Oops! Please choose from: <i>action, sci-fi, thriller, drama, romance</i>";
+                    }
+
+                // --- PHONES ---
+                case "AWAIT_PHONE_BRAND":
+                    chatState = "AWAIT_CATEGORY";
+                    if (text.includes("samsung")) {
+                        return `Here are the best SAMSUNG phones available:<ul>${formatList("phones", "samsung")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else if (text.includes("iphone") || text.includes("apple")) {
+                        return `Here are the best IPHONEs available:<ul>${formatList("phones", "iphone")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else if (text.includes("oneplus") || text.includes("one plus")) { 
+                        return `Here are the best ONEPLUS phones available:<ul>${formatList("phones", "oneplus")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else {
+                        chatState = "AWAIT_PHONE_BRAND";
+                        return "Oops! Please choose from: <i>samsung, iphone, oneplus</i>";
+                    }
+
+                // --- LAPTOPS (STEP 1: BUDGET) ---
+                case "AWAIT_LAPTOP_BUDGET":
+                    if (text.includes("high")) {
+                        tempLaptopBudget = "higher end"; 
+                        chatState = "AWAIT_LAPTOP_OS";
+                        return "Got it. And what operating system do you prefer?<br><i>(mac / windows)</i>";
+                    } else if (text.includes("low")) {
+                        tempLaptopBudget = "lower end"; 
+                        chatState = "AWAIT_LAPTOP_OS";
+                        return "Got it. And what operating system do you prefer?<br><i>(mac / windows)</i>";
+                    } else {
+                        return "Oops! Please choose from: <i>higher end, lower end</i>";
+                    }
+
+                // --- LAPTOPS (STEP 2: OS) ---
+                case "AWAIT_LAPTOP_OS":
+                    chatState = "AWAIT_CATEGORY";
+                    if (text.includes("mac") || text.includes("apple")) {
+                        let recommendation = recommenderData.laptops[tempLaptopBudget]["mac"];
+                        return `Based on your needs, I highly recommend the: <br><b>${recommendation}</b><br><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else if (text.includes("window")) {
+                        let recommendation = recommenderData.laptops[tempLaptopBudget]["windows"];
+                        return `Based on your needs, I highly recommend the: <br><b>${recommendation}</b><br><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else {
+                        chatState = "AWAIT_LAPTOP_OS";
+                        return "Oops! Please choose from: <i>mac, windows</i>";
+                    }
+
+                // --- GAMES ---
+                case "AWAIT_GAME_GENRE":
+                    chatState = "AWAIT_CATEGORY";
+                    if (text.includes("action") || text.includes("rpg")) {
+                        return `Get ready to play! Here are my top ACTION RPG recommendations:<ul>${formatList("games", "action rpg")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else if (text.includes("espionage") || text.includes("stealth") || text.includes("spy")) {
+                        return `Get ready to play! Here are my top ESPIONAGE recommendations:<ul>${formatList("games", "espionage")}</ul><br>What else are you looking for? <i>(movies / phones / laptops / games)</i>`;
+                    } else {
+                        chatState = "AWAIT_GAME_GENRE";
+                        return "Oops! Please choose from: <i>action rpg, espionage</i>";
+                    }
+            }
+        }
+
+        // --- 3. UI Interaction Logic ---
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+
+        function addMessage(message, sender) {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+            
+            if (sender === "user") {
+                messageElement.classList.add("user-message");
+            } else {
+                messageElement.classList.add("bot-message");
+            }
+            
+            messageElement.innerHTML = message;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleSend() {
+            const rawText = userInput.value; 
+            if (rawText.trim() === "") return; 
+
+            // Display User Message exactly as they typed it
+            addMessage(rawText, "user");
+            userInput.value = "";
+
+            // Display Bot Response with slight delay
+            setTimeout(() => {
+                const response = getBotResponse(rawText);
+                addMessage(response, "bot");
+            }, 400);
+        }
+
+        // Event Listeners for Button Click AND Enter Key
+        sendBtn.addEventListener("click", handleSend);
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevents default form submission if any
+                handleSend();
+            }
+        });
+
+        // --- 4. Initialize Chatbot on Load ---
+        window.onload = function() {
+            setTimeout(() => {
+                addMessage("HI I am Theia I am your Recommender Assistant How Can I Help you?<br><br>I can recommend items in four categories: <b>Movies, Phones, Laptops, and Games.</b><br><br>What are you looking for today?", "bot");
+                chatState = "AWAIT_CATEGORY";
+            }, 500);
+        };
+    </script>
+</body>
+</html>

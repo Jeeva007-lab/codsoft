@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe AI - Built by jeeva</title>
+    <style>
+        /* Basic reset and background matching the chat interface */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f111a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+        }
+
+     
+        #app-container {
+            width: 400px;
+            height: 600px;
+            background-color: #1e2233;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+    
+        #header {
+            background-color: #3b71ff;
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+     
+        #game-area {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+
+        #status-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #8892b0;
+            text-align: center;
+            min-height: 30px;
+        }
+
+  
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr); /* <-- FIX: Forces rows to be equal height */
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1 / 1;
+        }
+
+        
+        .cell {
+            background-color: #333b4d;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .cell:hover {
+            background-color: #3f4963;
+        }
+
+        .cell:active {
+            transform: scale(0.95);
+        }
+
+        /* Color classes for X and O */
+        .player-x {
+            color: #3b71ff; /* Blue for human */
+        }
+
+        .player-o {
+            color: #ff4757; /* Red for AI */
+        }
+
+        /* Bottom Control Area */
+        #control-area {
+            display: flex;
+            padding: 20px;
+            background-color: #1e2233;
+            border-top: 1px solid #2a2f42;
+        }
+
+        /* Restart Button (Styled like the Send Button) */
+        #restart-btn {
+            background-color: #3b71ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+
+        #restart-btn:hover {
+            background-color: #2756d9;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div id="header">🎮 Tic-Tac-Toe AI </div>
+        
+        <div id="game-area">
+            <div id="status-text">You are 'X'. Your turn!</div>
+            
+            <div class="board" id="board">
+                <div class="cell" onclick="handleMove(0)"></div>
+                <div class="cell" onclick="handleMove(1)"></div>
+                <div class="cell" onclick="handleMove(2)"></div>
+                <div class="cell" onclick="handleMove(3)"></div>
+                <div class="cell" onclick="handleMove(4)"></div>
+                <div class="cell" onclick="handleMove(5)"></div>
+                <div class="cell" onclick="handleMove(6)"></div>
+                <div class="cell" onclick="handleMove(7)"></div>
+                <div class="cell" onclick="handleMove(8)"></div>
+            </div>
+        </div>
+
+        <div id="control-area">
+            <button id="restart-btn" onclick="resetGame()">Restart Game</button>
+        </div>
+    </div>
+
+    <script>
+      
+        let boardState = ['', '', '', '', '', '', '', '', ''];
+        const human = 'X';
+        const ai = 'O';
+        let gameActive = true;
+
+        const statusText = document.getElementById('status-text');
+        const cells = document.querySelectorAll('.cell');
+
+
+        const winConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        function checkWinner(board, player) {
+            for (let i = 0; i < winConditions.length; i++) {
+                const [a, b, c] = winConditions[i];
+                if (board[a] === player && board[b] === player && board[c] === player) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function isDraw(board) {
+            return !board.includes('');
+        }
+
+     
+        function minimax(board, depth, isMaximizing) {
+            if (checkWinner(board, ai)) return 10 - depth; 
+            if (checkWinner(board, human)) return depth - 10; 
+            if (isDraw(board)) return 0;
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        board[i] = ai;
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = ''; 
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        board[i] = human;
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = ''; 
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+      
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let move = -1;
+            for (let i = 0; i < 9; i++) {
+                if (boardState[i] === '') {
+                    boardState[i] = ai;
+                    let score = minimax(boardState, 0, false);
+                    boardState[i] = '';
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+            return move;
+        }
+
+
+        function updateBoardUI() {
+            for (let i = 0; i < 9; i++) {
+                cells[i].innerText = boardState[i];
+                
+                cells[i].classList.remove('player-x', 'player-o');
+                if (boardState[i] === 'X') cells[i].classList.add('player-x');
+                if (boardState[i] === 'O') cells[i].classList.add('player-o');
+            }
+        }
+
+        function checkGameState() {
+            if (checkWinner(boardState, human)) {
+                statusText.innerText = "You Win! (Wait, that's impossible...)";
+                statusText.style.color = "#3b71ff";
+                gameActive = false;
+                return true;
+            } else if (checkWinner(boardState, ai)) {
+                statusText.innerText = "AI Wins! Better luck next time.";
+                statusText.style.color = "#ff4757";
+                gameActive = false;
+                return true;
+            } else if (isDraw(boardState)) {
+                statusText.innerText = "It's a draw!";
+                statusText.style.color = "white";
+                gameActive = false;
+                return true;
+            }
+            return false;
+        }
+
+        function handleMove(index) {
+            if (!gameActive || boardState[index] !== '') return;
+
+            // Human Move
+            boardState[index] = human;
+            updateBoardUI();
+            
+            if (checkGameState()) return; 
+
+            // AI Move
+            statusText.innerText = "AI is thinking...";
+            gameActive = false; 
+            
+            setTimeout(() => {
+                const aiMoveIndex = getBestMove();
+                boardState[aiMoveIndex] = ai;
+                updateBoardUI();
+                
+                if (!checkGameState()) {
+                    statusText.innerText = "Your turn!";
+                    gameActive = true; 
+                }
+            }, 300);
+        }
+
+        function resetGame() {
+            boardState = ['', '', '', '', '', '', '', '', ''];
+            gameActive = true;
+            statusText.innerText = "You are 'X'. Your turn!";
+            statusText.style.color = "#8892b0";
+            updateBoardUI();
+        }
+    </script>
+</body>
+</html>

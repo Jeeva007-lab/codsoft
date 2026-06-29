@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theia - Built by Jeeva</title>
+    <style>
+        /* Basic reset and background */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f111a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        
+        #chat-container {
+            width: 400px;
+            height: 600px;
+            background-color: #1e2233;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+
+        #header {
+            background-color: #2f65f6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+     
+        #chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+    
+        .message {
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 75%;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .bot-message {
+            background-color: #333b4d;
+            color: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-message {
+            background-color: #2f65f6;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+       
+        #input-area {
+            display: flex;
+            padding: 15px;
+            background-color: #171a26;
+            border-top: 1px solid #2a2f42;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #333b4d;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        #user-input::placeholder {
+            color: #8892b0;
+        }
+
+        #send-btn {
+            background-color: #2f65f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        #send-btn:hover {
+            background-color: #1c4bd9;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat-container">
+        <div id="header">🤖 Theia - Built by Jeeva</div>
+        <div id="chat-box">
+            <div class="message bot-message">Hello! I'm Theia. How can I help you today?</div>
+        </div>
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Bot Logic (Translated from Python to JavaScript) ---
+        function getBotResponse(userInput) {
+            // Convert input to lowercase
+            let text = userInput.toLowerCase();
+
+            // The 20 Rules using .includes() instead of Python's 'in'
+            if (text.includes("hello") || text.includes("hi")) {
+                return "Hello there! How can I help you today?";
+            } else if (text.includes("how are you")) {
+                return "I'm a simple rule-based bot, but I'm doing great!";
+            } else if (text.includes("what is your name") || text.includes("your name") || text.includes("who are you")) {
+                return "I am Theia, your virtual assistant.";
+            } else if (text.includes("how old are you") || text.includes("your age")) {
+                return "I don't have an age, I was just compiled!";
+            } else if (text.includes("who made you") || text.includes("created you")) {
+                return "I was built by Jeeva, a talented developer.";
+            } else if (text.includes("what can you do") || text.includes("capabilities")) {
+                return "I can answer basic questions, tell jokes, and chat with you.";
+            } else if (text.includes("joke")) {
+                return "Why do programmers prefer dark mode? Because light attracts bugs!";
+            } else if (text.includes("weather")) {
+                return "I don't have internet access to check, but I hope it's nice outside!";
+            } else if (text.includes("where are you") || text.includes("location")) {
+                return "I exist safely inside your computer's memory.";
+            } else if (text.includes("thank you") || text.includes("thanks")) {
+                return "You're very welcome!";
+            } else if (text.includes("food") || text.includes("eat")) {
+                return "I consume data and electricity. No snacks for me, sadly.";
+            } else if (text.includes("hobby") || text.includes("free time")) {
+                return "I enjoy processing text arrays and waiting for your next input.";
+            } else if (text.includes("sleep") || text.includes("tired")) {
+                return "Bots never sleep! I am always ready to process your code.";
+            } else if (text.includes("code") || text.includes("programming") || text.includes("c++")) {
+                return "Programming is great! I can help brainstorm logic for algorithms or data structures.";
+            } else if (text.includes("lab") || text.includes("circuit") || text.includes("esp32")) {
+                return "Working on hardware? Make sure your breadboard connections are tight and voltages are correct!";
+            } else if (text.includes("exam") || text.includes("study")) {
+                return "Good luck with your academics! Remember to take breaks while revising.";
+            } else if (text.includes("laptop") || text.includes("phone")) {
+                return "Looking at tech specs? I love analyzing high-end devices and hardware configurations.";
+            } else if (text.includes("game") || text.includes("play")) {
+                return "I can't play myself, but I hear open-world games are incredibly fun to explore.";
+            } else if (text.includes("help")) {
+                return "I can answer questions about myself, tell jokes, or discuss basic tech topics. Just ask!";
+            } else if (text.includes("bye") || text.includes("exit") || text.includes("quit")) {
+                return "Goodbye! Have a great day. Refresh the page to chat again.";
+            } else {
+                return "I'm sorry, I don't understand that. Could you try rephrasing?";
+            }
+        }
+
+   
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+
+        function addMessage(message, sender) {
+           
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+            
+            if (sender === "user") {
+                messageElement.classList.add("user-message");
+            } else {
+                messageElement.classList.add("bot-message");
+            }
+            
+            messageElement.innerText = message;
+            chatBox.appendChild(messageElement);
+            
+            // Auto-scroll to the bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleSend() {
+            const text = userInput.value.trim();
+            if (text === "") return; // Don't send empty messages
+
+          
+            addMessage(text, "user");
+            
+       
+            userInput.value = "";
+
+         
+            setTimeout(() => {
+                const response = getBotResponse(text);
+                addMessage(response, "bot");
+            }, 300);
+        }
+
+      
+        sendBtn.addEventListener("click", handleSend);
+
+
+        userInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                handleSend();
+            }
+        });
+    </script>
+</body>
+</html>
